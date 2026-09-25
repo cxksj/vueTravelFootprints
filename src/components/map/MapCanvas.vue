@@ -112,7 +112,7 @@ async function initMap() {
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
     if (window.AMap.DistrictLayer?.Province) {
-      regionLayer = createRegionLayer()
+      regionLayer = createRegionLayer({ adcode: markers.visitedProvinceCodes })
       syncRegionLayer()
     }
     renderMarkers()
@@ -260,8 +260,9 @@ onBeforeUnmount(() => {
   map = null
 })
 
-// 创建省份填色图层（高德 DistrictLayer.Province），同参数构造以便降级时重建
-function createRegionLayer() {
+// 创建省份填色图层（高德 DistrictLayer.Province）；opts 可透传 adcode 等构造参数，
+// 未显式传 adcode 时 SDK 会默认渲染全国填色，降级重建必须带上
+function createRegionLayer(opts = {}) {
   const layer = new window.AMap.DistrictLayer.Province({
     zIndex: 9,
     depth: 0,
@@ -270,20 +271,22 @@ function createRegionLayer() {
       'province-stroke': 'rgba(15, 110, 107, 0.55)',
       'city-stroke': 'rgba(15, 110, 107, 0.25)',
       'county-stroke': 'rgba(0, 0, 0, 0)'
-    }
+    },
+    ...opts
   })
   layer.setMap(map)
   return layer
 }
 
-// 把已到访省码与开关状态同步到填色图层；setAdcodes 缺失时销毁重建兜底
+// 把已到访省码与开关状态同步到填色图层；setAdcode 缺失时销毁重建兜底
 function syncRegionLayer() {
   if (!regionLayer) return
-  if (typeof regionLayer.setAdcodes === 'function') {
-    regionLayer.setAdcodes(markers.visitedProvinceCodes)
+  if (typeof regionLayer.setAdcode === 'function') {
+    regionLayer.setAdcode(markers.visitedProvinceCodes)
   } else {
     regionLayer.setMap(null)
-    regionLayer = createRegionLayer()
+    regionLayer.destroy?.()
+    regionLayer = createRegionLayer({ adcode: markers.visitedProvinceCodes })
   }
   if (ui.regionLayerVisible) regionLayer.show()
   else regionLayer.hide()
