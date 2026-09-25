@@ -207,6 +207,3 @@ npm run build
 
 ---
 
-demo（上游演示站）:
-
-travel.regen.ltd

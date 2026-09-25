@@ -1,6 +1,5 @@
 # Node.js
 node_modules/
-package-lock.json
 
 # Vite build output
 dist/
@@ -24,6 +23,12 @@ dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Claude Code local session
+.claude/
+
+# Local screenshots
+iShot*.png
 
 # Python cache/virtualenv (legacy)
 __pycache__/
