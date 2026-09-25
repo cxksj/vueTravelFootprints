@@ -31,11 +31,11 @@ export const useMarkersStore = defineStore('markers', () => {
     })
   })
 
-  // 已到访省份的去重省码集合，供地图省份填色图层使用
-  const visitedProvinceCodes = computed(() => {
+  // 已到访城市的去重市码集合，供地图城市填色图层使用
+  const visitedCityCodes = computed(() => {
     const set = new Set()
     markers.value.forEach((m) => {
-      if (m.provinceCode) set.add(m.provinceCode)
+      if (m.cityCode) set.add(m.cityCode)
     })
     return [...set]
   })
@@ -145,7 +145,7 @@ export const useMarkersStore = defineStore('markers', () => {
     canEdit,
     isShareView,
     filteredMarkers,
-    visitedProvinceCodes,
+    visitedCityCodes,
     stats,
     categoryOptions: CATEGORIES,
     getCategoryMeta,

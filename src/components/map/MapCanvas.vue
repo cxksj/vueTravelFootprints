@@ -47,7 +47,7 @@
         circle
         :type="ui.regionLayerVisible ? 'primary' : 'default'"
         @click="ui.regionLayerVisible = !ui.regionLayerVisible"
-        title="省份填色开关"
+        title="城市填色开关"
       >◉</el-button>
     </div>
   </div>
@@ -106,13 +106,13 @@ async function initMap() {
     map = new AMap.Map('map-container', {
       zoom: 5,
       center: [104.0, 35.0],
-      mapStyle: 'amap://styles/fresh',
+      mapStyle: 'amap://styles/light',
       viewMode: '2D'
     })
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
-    if (window.AMap.DistrictLayer?.Province) {
-      regionLayer = createRegionLayer({ adcode: markers.visitedProvinceCodes })
+    if (window.AMap.DistrictLayer?.Country) {
+      regionLayer = createRegionLayer()
       syncRegionLayer()
     }
     renderMarkers()
@@ -260,34 +260,30 @@ onBeforeUnmount(() => {
   map = null
 })
 
-// 创建省份填色图层（高德 DistrictLayer.Province）；opts 可透传 adcode 等构造参数，
-// 未显式传 adcode 时 SDK 会默认渲染全国填色，降级重建必须带上
-function createRegionLayer(opts = {}) {
-  const layer = new window.AMap.DistrictLayer.Province({
+// 创建城市填色图层（高德 DistrictLayer.Country + SOC 'CHN' + depth 2 为市级层级）；
+// fill 为函数式样式，入参是要素属性对象，从 props.adcode 匹配已到访城市
+function createRegionLayer() {
+  const visited = new Set(markers.visitedCityCodes.map(String))
+  const layer = new window.AMap.DistrictLayer.Country({
     zIndex: 9,
-    depth: 0,
+    SOC: 'CHN',
+    depth: 2,
     styles: {
-      fill: 'rgba(15, 110, 107, 0.18)',
-      'province-stroke': 'rgba(15, 110, 107, 0.55)',
-      'city-stroke': 'rgba(15, 110, 107, 0.25)',
-      'county-stroke': 'rgba(0, 0, 0, 0)'
-    },
-    ...opts
+      fill: (props) => (visited.has(String(props?.adcode)) ? 'rgba(72, 119, 173, 0.35)' : 'rgba(0, 0, 0, 0)'),
+      'province-stroke': 'rgba(72, 119, 173, 0.4)',
+      'city-stroke': 'rgba(72, 119, 173, 0.5)'
+    }
   })
   layer.setMap(map)
   return layer
 }
 
-// 把已到访省码与开关状态同步到填色图层；setAdcode 缺失时销毁重建兜底
+// 已到访集合变化时函数式样式无法增量更新，销毁重建图层；同时同步显隐开关
 function syncRegionLayer() {
   if (!regionLayer) return
-  if (typeof regionLayer.setAdcode === 'function') {
-    regionLayer.setAdcode(markers.visitedProvinceCodes)
-  } else {
-    regionLayer.setMap(null)
-    regionLayer.destroy?.()
-    regionLayer = createRegionLayer({ adcode: markers.visitedProvinceCodes })
-  }
+  regionLayer.setMap(null)
+  regionLayer.destroy?.()
+  regionLayer = createRegionLayer()
   if (ui.regionLayerVisible) regionLayer.show()
   else regionLayer.hide()
 }
