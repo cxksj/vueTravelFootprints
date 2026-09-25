@@ -43,6 +43,12 @@
     <div class="fab">
       <el-button circle @click="locateMe" title="我的位置">◎</el-button>
       <el-button circle @click="fitAll" title="查看全部足迹">⊕</el-button>
+      <el-button
+        circle
+        :type="ui.regionLayerVisible ? 'primary' : 'default'"
+        @click="ui.regionLayerVisible = !ui.regionLayerVisible"
+        title="省份填色开关"
+      >◉</el-button>
     </div>
   </div>
 </template>
@@ -71,6 +77,7 @@ const error = ref('')
 let map = null
 let markerApps = []
 let amapMarkers = []
+let regionLayer = null
 
 const showEmpty = computed(() => !loading.value && !markers.loading && !error.value && !markers.markers.length && !ui.addMode)
 const showNoMatch = computed(() => !showEmpty.value && !markers.loading && markers.markers.length && !markers.filteredMarkers.length)
@@ -104,6 +111,10 @@ async function initMap() {
     })
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
+    if (window.AMap.DistrictLayer?.Province) {
+      regionLayer = createRegionLayer()
+      syncRegionLayer()
+    }
     renderMarkers()
     fitAll()
   } catch (err) {
@@ -213,8 +224,16 @@ watch(
   () => markers.filteredMarkers,
   () => {
     renderMarkers()
+    syncRegionLayer()
   },
   { deep: true }
+)
+
+watch(
+  () => ui.regionLayerVisible,
+  () => {
+    syncRegionLayer()
+  }
 )
 
 watch(
@@ -240,6 +259,35 @@ onBeforeUnmount(() => {
   map?.destroy()
   map = null
 })
+
+// 创建省份填色图层（高德 DistrictLayer.Province），同参数构造以便降级时重建
+function createRegionLayer() {
+  const layer = new window.AMap.DistrictLayer.Province({
+    zIndex: 9,
+    depth: 0,
+    styles: {
+      fill: 'rgba(15, 110, 107, 0.18)',
+      'province-stroke': 'rgba(15, 110, 107, 0.55)',
+      'city-stroke': 'rgba(15, 110, 107, 0.25)',
+      'county-stroke': 'rgba(0, 0, 0, 0)'
+    }
+  })
+  layer.setMap(map)
+  return layer
+}
+
+// 把已到访省码与开关状态同步到填色图层；setAdcodes 缺失时销毁重建兜底
+function syncRegionLayer() {
+  if (!regionLayer) return
+  if (typeof regionLayer.setAdcodes === 'function') {
+    regionLayer.setAdcodes(markers.visitedProvinceCodes)
+  } else {
+    regionLayer.setMap(null)
+    regionLayer = createRegionLayer()
+  }
+  if (ui.regionLayerVisible) regionLayer.show()
+  else regionLayer.hide()
+}
 
 defineExpose({ fitAll, renderMarkers })
 </script>

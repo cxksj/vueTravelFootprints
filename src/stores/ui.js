@@ -15,6 +15,7 @@ export const useUiStore = defineStore('ui', () => {
   const usersOpen = ref(false)
   const profileOpen = ref(false)
   const focusCoords = ref(null)
+  const regionLayerVisible = ref(true)
 
   function openForm(marker = null, coords = null) {
     editingMarker.value = marker ? { ...marker } : null
@@ -64,6 +65,7 @@ export const useUiStore = defineStore('ui', () => {
     usersOpen,
     profileOpen,
     focusCoords,
+    regionLayerVisible,
     openForm,
     closeForm,
     pickOnMap,
