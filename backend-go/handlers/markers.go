@@ -8,11 +8,12 @@ import (
 )
 
 type MarkerHandler struct {
-	db *database.DB
+	db      *database.DB
+	geocode *GeocodeClient
 }
 
-func NewMarkerHandler(db *database.DB) *MarkerHandler {
-	return &MarkerHandler{db: db}
+func NewMarkerHandler(db *database.DB, geocode *GeocodeClient) *MarkerHandler {
+	return &MarkerHandler{db: db, geocode: geocode}
 }
 
 func (h *MarkerHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -63,6 +64,12 @@ func (h *MarkerHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	marker := models.NewMarker(uid, req)
+	if region := h.geocode.ReverseGeocode(marker.Longitude, marker.Latitude); region != nil {
+		marker.ProvinceCode = region.ProvinceCode
+		marker.CityCode = region.CityCode
+		marker.ProvinceName = region.ProvinceName
+		marker.CityName = region.CityName
+	}
 	if err := h.db.CreateMarker(marker); err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -99,10 +106,35 @@ func (h *MarkerHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	coordChanged := (req.Longitude != nil && *req.Longitude != existing.Longitude) ||
+		(req.Latitude != nil && *req.Latitude != existing.Latitude)
+	needRegion := coordChanged || existing.ProvinceCode == ""
+	var region *models.RegionInfo
+	if needRegion {
+		nextLng, nextLat := existing.Longitude, existing.Latitude
+		if req.Longitude != nil {
+			nextLng = *req.Longitude
+		}
+		if req.Latitude != nil {
+			nextLat = *req.Latitude
+		}
+		region = h.geocode.ReverseGeocode(nextLng, nextLat)
+	}
+
 	marker, err := h.db.UpdateMarker(id, req)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+	if region != nil {
+		if err := h.db.UpdateMarkerRegion(marker.ID, *region); err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		marker.ProvinceCode = region.ProvinceCode
+		marker.CityCode = region.CityCode
+		marker.ProvinceName = region.ProvinceName
+		marker.CityName = region.CityName
 	}
 	writeOK(w, withAuthor(h.db, *marker))
 }
