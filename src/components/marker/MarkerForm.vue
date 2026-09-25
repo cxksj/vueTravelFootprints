@@ -364,7 +364,7 @@ async function submit() {
   bottom: 4px;
   font-style: normal;
   font-size: 10px;
-  background: rgba(15, 110, 107, 0.9);
+  background: rgba(72, 119, 173, 0.9);
   color: #fff;
   border-radius: 6px;
   padding: 1px 6px;
