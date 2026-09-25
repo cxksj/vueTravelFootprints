@@ -110,6 +110,7 @@ import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useMarkersStore } from '@/stores/markers'
 import { useUiStore } from '@/stores/ui'
+import { gcj02ToWgs84, wgs84ToGcj02 } from '@/utils/coords'
 import { searchPlaces } from '@/utils/places'
 
 const markers = useMarkersStore()
@@ -160,8 +161,9 @@ watch(
     if (editing) {
       Object.assign(form, {
         name: editing.name,
-        longitude: Number(editing.longitude),
-        latitude: Number(editing.latitude),
+        // 库里 WGS-84 → 表单 GCJ-02（高德坐标系）
+        longitude: wgs84ToGcj02(Number(editing.longitude), Number(editing.latitude))[0],
+        latitude: wgs84ToGcj02(Number(editing.longitude), Number(editing.latitude))[1],
         address: editing.address || '',
         visitDate: editing.visitDate || '',
         category: editing.category || '',
@@ -211,7 +213,9 @@ function onPlaceSelect(item) {
   form.longitude = lng
   form.latitude = lat
   placeQuery.value = item.name || item.value
-  ui.focusMap(lng, lat)
+  // focusMap 的消费端（focusCoords watch）按 DB 语义（WGS-84）再转 GCJ-02，这里先转回 WGS-84 避免双重转换
+  const [wLng, wLat] = gcj02ToWgs84(lng, lat)
+  ui.focusMap(wLng, wLat)
   ElMessage.success(`已定位到${form.name}`)
 }
 
@@ -251,8 +255,9 @@ async function submit() {
   try {
     const payload = {
       name: form.name,
-      longitude: String(form.longitude),
-      latitude: String(form.latitude),
+      // 表单 GCJ-02 → 库 WGS-84
+      longitude: String(gcj02ToWgs84(form.longitude, form.latitude)[0]),
+      latitude: String(gcj02ToWgs84(form.longitude, form.latitude)[1]),
       address: form.address,
       visitDate: form.visitDate,
       category: form.category,
