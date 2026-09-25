@@ -92,6 +92,15 @@ func (db *DB) migrate() error {
 			created_at TEXT NOT NULL,
 			PRIMARY KEY (share_id, user_id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS trips (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL,
+			name TEXT NOT NULL,
+			start_date TEXT DEFAULT '',
+			end_date TEXT DEFAULT '',
+			notes TEXT DEFAULT '',
+			created_at TEXT NOT NULL
+		)`,
 	}
 
 	for _, q := range stmts {
@@ -134,6 +143,7 @@ func (db *DB) migrate() error {
 		`CREATE INDEX IF NOT EXISTS idx_shares_token ON shares(token)`,
 		`CREATE INDEX IF NOT EXISTS idx_shares_owner ON shares(owner_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_share_members_user ON share_members(user_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_trips_user ON trips(user_id)`,
 	}
 	for _, q := range indexes {
 		if _, err := db.conn.Exec(q); err != nil {

@@ -38,6 +38,7 @@ func main() {
 	placeHandler := handlers.NewPlaceHandler(cfg.AmapKey)
 	geocodeClient := handlers.NewGeocodeClient(cfg.AmapKey)
 	markerHandler := handlers.NewMarkerHandler(db, geocodeClient)
+	tripHandler := handlers.NewTripHandler(db)
 
 	mux := http.NewServeMux()
 	protect := middleware.RequireAuth(cfg.JWTSecret)
@@ -66,6 +67,11 @@ func main() {
 	mux.Handle("DELETE /api/markers/{id}", protect(http.HandlerFunc(markerHandler.Delete)))
 
 	mux.Handle("GET /api/places", protect(http.HandlerFunc(placeHandler.Search)))
+
+	mux.Handle("GET /api/trips", protect(http.HandlerFunc(tripHandler.List)))
+	mux.Handle("POST /api/trips", protect(http.HandlerFunc(tripHandler.Create)))
+	mux.Handle("PUT /api/trips/{id}", protect(http.HandlerFunc(tripHandler.Update)))
+	mux.Handle("DELETE /api/trips/{id}", protect(http.HandlerFunc(tripHandler.Delete)))
 
 	mux.Handle("GET /api/shares", protect(http.HandlerFunc(shareHandler.ListMine)))
 	mux.Handle("GET /api/shares/inbox", protect(http.HandlerFunc(shareHandler.Inbox)))
