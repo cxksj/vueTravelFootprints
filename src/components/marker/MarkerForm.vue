@@ -56,6 +56,11 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="所属行程">
+          <el-select v-model="form.tripId" clearable placeholder="不归属任何行程" style="width: 100%">
+            <el-option v-for="t in trips.trips" :key="t.id" :label="t.name" :value="t.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="form.address" placeholder="搜索地点后会自动填充" />
         </el-form-item>
@@ -109,11 +114,13 @@
 import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useMarkersStore } from '@/stores/markers'
+import { useTripsStore } from '@/stores/trips'
 import { useUiStore } from '@/stores/ui'
 import { gcj02ToWgs84, wgs84ToGcj02 } from '@/utils/coords'
 import { searchPlaces } from '@/utils/places'
 
 const markers = useMarkersStore()
+const trips = useTripsStore()
 const ui = useUiStore()
 const formRef = ref(null)
 const submitting = ref(false)
@@ -128,6 +135,7 @@ const form = reactive({
   address: '',
   visitDate: '',
   category: '',
+  tripId: '',
   notes: '',
   photos: []
 })
@@ -146,6 +154,7 @@ function reset() {
     address: '',
     visitDate: '',
     category: '',
+    tripId: '',
     notes: '',
     photos: []
   })
@@ -156,6 +165,7 @@ watch(
   () => ui.formOpen,
   (open) => {
     if (!open) return
+    if (!trips.trips.length) trips.fetchTrips().catch(() => {})
     const editing = ui.editingMarker
     const coords = ui.pendingCoords
     if (editing) {
@@ -167,6 +177,7 @@ watch(
         address: editing.address || '',
         visitDate: editing.visitDate || '',
         category: editing.category || '',
+        tripId: editing.tripId || '',
         notes: editing.notes || '',
         photos: [...(editing.photos || [])]
       })
@@ -261,6 +272,7 @@ async function submit() {
       address: form.address,
       visitDate: form.visitDate,
       category: form.category,
+      tripId: form.tripId || '',
       notes: form.notes,
       photos: form.photos
     }

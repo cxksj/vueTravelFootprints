@@ -14,6 +14,7 @@ export const useUiStore = defineStore('ui', () => {
   const shareTarget = ref(null)
   const usersOpen = ref(false)
   const profileOpen = ref(false)
+  const tripsOpen = ref(false)
   const focusCoords = ref(null)
   const regionLayerVisible = ref(true)
 
@@ -64,6 +65,7 @@ export const useUiStore = defineStore('ui', () => {
     shareTarget,
     usersOpen,
     profileOpen,
+    tripsOpen,
     focusCoords,
     regionLayerVisible,
     openForm,

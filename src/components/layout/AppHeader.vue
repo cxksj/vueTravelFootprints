@@ -59,6 +59,7 @@
               <el-dropdown-item disabled>{{ auth.displayName }}</el-dropdown-item>
               <el-dropdown-item @click="ui.profileOpen = true">个人资料</el-dropdown-item>
               <el-dropdown-item @click="ui.openShare(null)">共享地图</el-dropdown-item>
+              <el-dropdown-item @click="ui.tripsOpen = true">行程管理</el-dropdown-item>
               <el-dropdown-item v-if="auth.isAdmin" @click="ui.usersOpen = true">用户管理</el-dropdown-item>
               <el-dropdown-item divided @click="onLogout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
