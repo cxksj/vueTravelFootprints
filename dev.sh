@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
-# 旅迹分支验收服务一键启停：后端 5200 + 前端 5174（独立于主检出的 5100/5173）
+# 旅迹一键启停：后端（读 .env 的 PORT，默认 5100）+ 前端（5173）
+# 隔离环境覆盖示例：BACKEND_PORT=5200 FRONTEND_PORT=5174 ./dev.sh start
 # 用法：./dev.sh start | stop | restart | status | log backend|frontend
 set -euo pipefail
 cd "$(dirname "$0")"
 
-BACKEND_PORT=5200
-FRONTEND_PORT=5174
+ENV_PORT=$(sed -n 's/^PORT=//p' .env 2>/dev/null | tail -1 | tr -d '" ' )
+BACKEND_PORT="${BACKEND_PORT:-${ENV_PORT:-5100}}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 LOG_DIR=/tmp/dcyy-dev
+
+# 前端 API 地址与后端端口不一致时（如端口被覆盖），同步覆盖给 vite
+ENV_API=$(sed -n 's/^VITE_API_BASE_URL=//p' .env 2>/dev/null | tail -1)
+if [[ "$ENV_API" != *":$BACKEND_PORT" ]]; then
+  export VITE_API_BASE_URL="http://localhost:$BACKEND_PORT"
+fi
 
 pids_on() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null || true; }
 
@@ -30,7 +38,7 @@ start() {
   fi
   if [[ -z "$(pids_on $FRONTEND_PORT)" ]]; then
     mkdir -p "$LOG_DIR"
-    VITE_API_BASE_URL=http://localhost:$BACKEND_PORT nohup npm run dev -- --port $FRONTEND_PORT >"$LOG_DIR/frontend.log" 2>&1 &
+    nohup npm run dev -- --port $FRONTEND_PORT >"$LOG_DIR/frontend.log" 2>&1 &
     echo "前端启动中（日志 $LOG_DIR/frontend.log）"
   else
     echo "前端 $FRONTEND_PORT 已在运行，跳过"
