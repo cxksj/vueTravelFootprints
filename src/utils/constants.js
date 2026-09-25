@@ -16,3 +16,6 @@ export function getCategoryMeta(value) {
 
 export const TOKEN_KEY = 'tf_token'
 export const USER_KEY = 'tf_user'
+
+export const PROVINCE_TOTAL = 34
+export const CITY_TOTAL = 333

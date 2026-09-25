@@ -44,10 +44,16 @@ export const useMarkersStore = defineStore('markers', () => {
     const list = markers.value
     const photos = list.reduce((n, m) => n + (m.photos?.length || 0), 0)
     const cats = new Set(list.map((m) => m.category).filter(Boolean))
+    const provinces = new Set(list.map((m) => m.provinceCode).filter(Boolean))
+    const cities = new Set(list.map((m) => m.cityCode).filter(Boolean))
+    const trips = new Set(list.map((m) => m.tripId).filter(Boolean))
     return {
       places: list.length,
       photos,
-      categories: cats.size
+      categories: cats.size,
+      provinces: provinces.size,
+      cities: cities.size,
+      trips: trips.size
     }
   })
 
