@@ -112,7 +112,14 @@ async function confirmRename() {
 async function remove(row) {
   try {
     await trips.removeTrip(row.id)
-    await markers.fetchMarkers()
+    if (markers.isShareView) {
+      // 分享视图下不能 fetchMarkers（会把地图切回本人足迹），本地同步即可：后端删除行程时已清空足迹的 trip_id
+      markers.markers.forEach((m) => {
+        if (m.tripId === row.id) m.tripId = ''
+      })
+    } else {
+      await markers.fetchMarkers()
+    }
     ElMessage.success('行程已删除，足迹保留')
   } catch (err) {
     ElMessage.error(err.message || '删除失败')
