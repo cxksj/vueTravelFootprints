@@ -39,6 +39,7 @@ func main() {
 	geocodeClient := handlers.NewGeocodeClient(cfg.AmapKey)
 	markerHandler := handlers.NewMarkerHandler(db, geocodeClient)
 	tripHandler := handlers.NewTripHandler(db)
+	backupHandler := handlers.NewBackupHandler(db, cfg.UploadDir)
 
 	mux := http.NewServeMux()
 	protect := middleware.RequireAuth(cfg.JWTSecret)
@@ -58,6 +59,7 @@ func main() {
 	mux.Handle("PUT /api/auth/me", protect(http.HandlerFunc(authHandler.UpdateMe)))
 	mux.Handle("GET /api/admin/users", protect(http.HandlerFunc(authHandler.ListUsers)))
 	mux.Handle("POST /api/admin/users", protect(http.HandlerFunc(authHandler.CreateUser)))
+	mux.Handle("GET /api/admin/export", protect(http.HandlerFunc(backupHandler.Export)))
 
 	mux.Handle("GET /api/markers", protect(http.HandlerFunc(markerHandler.GetAll)))
 	mux.Handle("GET /api/markers/search", protect(http.HandlerFunc(markerHandler.Search)))

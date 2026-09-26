@@ -56,6 +56,11 @@ Vue 3 前端 + Go 后端的多用户旅行足迹服务。在地图上记录去�
 - 地图底图改用高德 `light` 浅色样式，与浅色 UI 协调
 - 足迹分类色采用苹果系统色系（systemGreen / Brown / Orange / Indigo / Teal / Purple / Red）
 
+#### 数据备份
+
+- 管理员头像菜单「导出备份」一键下载 zip：内含 `data/travel.db`（`VACUUM INTO` 在线一致性快照，无需停服）与全部 `uploads/` 图片
+- 恢复方式（手动）：停服 → 解压 zip，用其中的 `data/` 与 `uploads/` 覆盖运行目录 → 重新启动
+
 #### 开发脚本
 
 - 根目录 `./dev.sh start|stop|restart|status|log` 一键启停前后端，端口读取 `.env`，可用 `BACKEND_PORT` / `FRONTEND_PORT` 覆盖
@@ -179,6 +184,7 @@ npm run build
 | `GET` | `/api/auth/me` | 当前用户 |
 | `PUT` | `/api/auth/me` | 更新昵称与头像 |
 | `GET/POST` | `/api/admin/users` | 管理员查看 / 创建用户 |
+| `GET` | `/api/admin/export` | 导出备份 zip（数据库快照 + 全部图片，仅管理员） |
 | `GET` | `/api/places?q=` | 地点搜索 |
 | `GET/POST` | `/api/markers` | 我的足迹列表 / 创建 |
 | `PUT/DELETE` | `/api/markers/{id}` | 更新 / 删除 |

@@ -19,3 +19,16 @@ export function listUsers() {
 export function createUser(data) {
   return request.post('/api/admin/users', data)
 }
+
+export async function exportBackup() {
+  const blob = await request.get('/api/admin/export', { responseType: 'blob', timeout: 0 })
+  const d = new Date()
+  const p = (n) => String(n).padStart(2, '0')
+  const filename = `travel-backup-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.zip`
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
