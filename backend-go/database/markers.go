@@ -92,6 +92,16 @@ func (db *DB) DeleteMarker(id string) error {
 	return err
 }
 
+// CountMarkersReferencingPhoto 统计引用该图片 URL 的其他足迹数量（photos 以 JSON 数组存储，按带引号精确匹配）
+func (db *DB) CountMarkersReferencingPhoto(photoURL, excludeMarkerID string) (int, error) {
+	var n int
+	err := db.conn.QueryRow(
+		`SELECT COUNT(*) FROM markers WHERE photos LIKE ? AND id != ?`,
+		`%"`+photoURL+`"%`, excludeMarkerID,
+	).Scan(&n)
+	return n, err
+}
+
 func (db *DB) SearchMarkers(userID, keyword, category, startDate, endDate string) ([]models.Marker, error) {
 	query := markerSelect + ` WHERE user_id = ?`
 	args := []interface{}{userID}

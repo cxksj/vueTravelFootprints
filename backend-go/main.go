@@ -37,7 +37,7 @@ func main() {
 	uploadHandler := handlers.NewUploadHandler(cfg.UploadDir, cfg.PublicURL)
 	placeHandler := handlers.NewPlaceHandler(cfg.AmapKey)
 	geocodeClient := handlers.NewGeocodeClient(cfg.AmapKey)
-	markerHandler := handlers.NewMarkerHandler(db, geocodeClient)
+	markerHandler := handlers.NewMarkerHandler(db, geocodeClient, cfg.UploadDir)
 	tripHandler := handlers.NewTripHandler(db)
 	backupHandler := handlers.NewBackupHandler(db, cfg.UploadDir)
 
