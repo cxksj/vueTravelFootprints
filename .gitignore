@@ -10,7 +10,12 @@ dist/
 .env.*
 !.env.eg
 !.env.example
+.env.swp
 *.local
+
+# 本地自用打包脚本与产物
+package.sh
+release/
 
 # Editor
 .vscode/
