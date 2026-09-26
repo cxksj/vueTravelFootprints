@@ -52,6 +52,7 @@ env/
 *.out
 backend-go/travel-server
 backend-go/travel-server-*
+note.txt
 
 # SQLite (runtime data)
 *.db
