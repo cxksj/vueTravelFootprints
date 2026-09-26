@@ -57,6 +57,7 @@ func main() {
 	})
 	mux.Handle("GET /api/auth/me", protect(http.HandlerFunc(authHandler.Me)))
 	mux.Handle("PUT /api/auth/me", protect(http.HandlerFunc(authHandler.UpdateMe)))
+	mux.Handle("PUT /api/auth/password", protect(http.HandlerFunc(authHandler.ChangePassword)))
 	mux.Handle("GET /api/admin/users", protect(http.HandlerFunc(authHandler.ListUsers)))
 	mux.Handle("POST /api/admin/users", protect(http.HandlerFunc(authHandler.CreateUser)))
 	mux.Handle("GET /api/admin/export", protect(http.HandlerFunc(backupHandler.Export)))

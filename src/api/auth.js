@@ -12,6 +12,10 @@ export function updateMe(data) {
   return request.put('/api/auth/me', data)
 }
 
+export function changePassword(data) {
+  return request.put('/api/auth/password', data)
+}
+
 export function listUsers() {
   return request.get('/api/admin/users')
 }

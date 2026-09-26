@@ -183,6 +183,7 @@ npm run build
 | `POST` | `/api/auth/login` | 登录（用户名或邮箱） |
 | `GET` | `/api/auth/me` | 当前用户 |
 | `PUT` | `/api/auth/me` | 更新昵称与头像 |
+| `PUT` | `/api/auth/password` | 修改自己的密码（需旧密码） |
 | `GET/POST` | `/api/admin/users` | 管理员查看 / 创建用户 |
 | `GET` | `/api/admin/export` | 导出备份 zip（数据库快照 + 全部图片，仅管理员） |
 | `GET` | `/api/places?q=` | 地点搜索 |
