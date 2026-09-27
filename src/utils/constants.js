@@ -5,7 +5,12 @@ export const CATEGORIES = [
   { label: '城市漫步', value: '城市漫步', emoji: '🏙️', color: '#5856D6' },
   { label: '海滩度假', value: '海滩度假', emoji: '🏖️', color: '#30B0C7' },
   { label: '文化体验', value: '文化体验', emoji: '⛩️', color: '#AF52DE' },
-  { label: '自驾路书', value: '自驾路书', emoji: '🚗', color: '#FF3B30' }
+  { label: '自驾路书', value: '自驾路书', emoji: '🚗', color: '#FF3B30' },
+  { label: '酒店民宿', value: '酒店民宿', emoji: '🏨', color: '#FFCC00' },
+  { label: '购物血拼', value: '购物血拼', emoji: '🛍️', color: '#FF2D55' },
+  { label: '户外徒步', value: '户外徒步', emoji: '⛺', color: '#00C7BE' },
+  { label: '酒吧咖啡', value: '酒吧咖啡', emoji: '☕', color: '#8E8E93' },
+  { label: '交通枢纽', value: '交通枢纽', emoji: '✈️', color: '#007AFF' }
 ]
 
 export const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.value, c]))
