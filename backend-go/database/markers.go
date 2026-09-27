@@ -6,7 +6,7 @@ import (
 	"travel-footprints/models"
 )
 
-const markerSelect = `SELECT id, user_id, name, longitude, latitude, photos, category, notes, visit_date, address, is_public, province_code, city_code, province_name, city_name, trip_id, created_at, updated_at FROM markers`
+const markerSelect = `SELECT id, user_id, name, longitude, latitude, photos, category, notes, visit_date, address, is_public, province_code, city_code, province_name, city_name, district_code, district_name, trip_id, created_at, updated_at FROM markers`
 
 func (db *DB) GetMarkersByUser(userID string) ([]models.Marker, error) {
 	rows, err := db.conn.Query(markerSelect+` WHERE user_id = ? ORDER BY COALESCE(NULLIF(visit_date,''), created_at) DESC`, userID)
@@ -29,9 +29,9 @@ func (db *DB) CreateMarker(m models.Marker) error {
 		isPublic = 1
 	}
 	_, err := db.conn.Exec(
-		`INSERT INTO markers (id, user_id, name, longitude, latitude, photos, category, notes, visit_date, address, is_public, province_code, city_code, province_name, city_name, trip_id, created_at, updated_at)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		m.ID, m.UserID, m.Name, m.Longitude, m.Latitude, string(photosJSON), m.Category, m.Notes, m.VisitDate, m.Address, isPublic, m.ProvinceCode, m.CityCode, m.ProvinceName, m.CityName, m.TripID, m.CreatedAt, m.UpdatedAt,
+		`INSERT INTO markers (id, user_id, name, longitude, latitude, photos, category, notes, visit_date, address, is_public, province_code, city_code, province_name, city_name, district_code, district_name, trip_id, created_at, updated_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		m.ID, m.UserID, m.Name, m.Longitude, m.Latitude, string(photosJSON), m.Category, m.Notes, m.VisitDate, m.Address, isPublic, m.ProvinceCode, m.CityCode, m.ProvinceName, m.CityName, m.DistrictCode, m.DistrictName, m.TripID, m.CreatedAt, m.UpdatedAt,
 	)
 	return err
 }
@@ -77,8 +77,8 @@ func (db *DB) UpdateMarker(id string, req models.UpdateMarkerRequest) (*models.M
 		isPublic = 1
 	}
 	_, err = db.conn.Exec(
-		`UPDATE markers SET name=?, longitude=?, latitude=?, photos=?, category=?, notes=?, visit_date=?, address=?, is_public=?, province_code=?, city_code=?, province_name=?, city_name=?, trip_id=?, updated_at=? WHERE id=?`,
-		existing.Name, existing.Longitude, existing.Latitude, string(photosJSON), existing.Category, existing.Notes, existing.VisitDate, existing.Address, isPublic, existing.ProvinceCode, existing.CityCode, existing.ProvinceName, existing.CityName, existing.TripID, existing.UpdatedAt, id,
+		`UPDATE markers SET name=?, longitude=?, latitude=?, photos=?, category=?, notes=?, visit_date=?, address=?, is_public=?, province_code=?, city_code=?, province_name=?, city_name=?, district_code=?, district_name=?, trip_id=?, updated_at=? WHERE id=?`,
+		existing.Name, existing.Longitude, existing.Latitude, string(photosJSON), existing.Category, existing.Notes, existing.VisitDate, existing.Address, isPublic, existing.ProvinceCode, existing.CityCode, existing.ProvinceName, existing.CityName, existing.DistrictCode, existing.DistrictName, existing.TripID, existing.UpdatedAt, id,
 	)
 	if err != nil {
 		return nil, err
@@ -137,7 +137,7 @@ func scanMarker(row interface{ Scan(...interface{}) error }) (*models.Marker, er
 	var m models.Marker
 	var photosStr string
 	var isPublic int
-	err := row.Scan(&m.ID, &m.UserID, &m.Name, &m.Longitude, &m.Latitude, &photosStr, &m.Category, &m.Notes, &m.VisitDate, &m.Address, &isPublic, &m.ProvinceCode, &m.CityCode, &m.ProvinceName, &m.CityName, &m.TripID, &m.CreatedAt, &m.UpdatedAt)
+	err := row.Scan(&m.ID, &m.UserID, &m.Name, &m.Longitude, &m.Latitude, &photosStr, &m.Category, &m.Notes, &m.VisitDate, &m.Address, &isPublic, &m.ProvinceCode, &m.CityCode, &m.ProvinceName, &m.CityName, &m.DistrictCode, &m.DistrictName, &m.TripID, &m.CreatedAt, &m.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -155,7 +155,7 @@ func scanMarkers(rows *sql.Rows) ([]models.Marker, error) {
 		var m models.Marker
 		var photosStr string
 		var isPublic int
-		if err := rows.Scan(&m.ID, &m.UserID, &m.Name, &m.Longitude, &m.Latitude, &photosStr, &m.Category, &m.Notes, &m.VisitDate, &m.Address, &isPublic, &m.ProvinceCode, &m.CityCode, &m.ProvinceName, &m.CityName, &m.TripID, &m.CreatedAt, &m.UpdatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.UserID, &m.Name, &m.Longitude, &m.Latitude, &photosStr, &m.Category, &m.Notes, &m.VisitDate, &m.Address, &isPublic, &m.ProvinceCode, &m.CityCode, &m.ProvinceName, &m.CityName, &m.DistrictCode, &m.DistrictName, &m.TripID, &m.CreatedAt, &m.UpdatedAt); err != nil {
 			return nil, err
 		}
 		m.IsPublic = isPublic == 1
@@ -178,8 +178,8 @@ func decodePhotos(s string) []string {
 
 func (db *DB) UpdateMarkerRegion(id string, region models.RegionInfo) error {
 	_, err := db.conn.Exec(
-		`UPDATE markers SET province_code=?, city_code=?, province_name=?, city_name=?, updated_at=? WHERE id=?`,
-		region.ProvinceCode, region.CityCode, region.ProvinceName, region.CityName, models.NowISO(), id,
+		`UPDATE markers SET province_code=?, city_code=?, province_name=?, city_name=?, district_code=?, district_name=?, updated_at=? WHERE id=?`,
+		region.ProvinceCode, region.CityCode, region.ProvinceName, region.CityName, region.DistrictCode, region.DistrictName, models.NowISO(), id,
 	)
 	return err
 }

@@ -133,6 +133,12 @@ func (db *DB) migrate() error {
 	if err := db.ensureColumn("markers", "city_name", "TEXT DEFAULT ''"); err != nil {
 		return err
 	}
+	if err := db.ensureColumn("markers", "district_code", "TEXT DEFAULT ''"); err != nil {
+		return err
+	}
+	if err := db.ensureColumn("markers", "district_name", "TEXT DEFAULT ''"); err != nil {
+		return err
+	}
 	if err := db.ensureColumn("markers", "trip_id", "TEXT DEFAULT ''"); err != nil {
 		return err
 	}

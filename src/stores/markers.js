@@ -40,6 +40,23 @@ export const useMarkersStore = defineStore('markers', () => {
     return [...set]
   })
 
+  // 已到访区县/省份的去重码集合，供地图区县填色图层使用
+  const visitedDistrictCodes = computed(() => {
+    const set = new Set()
+    markers.value.forEach((m) => {
+      if (m.districtCode) set.add(m.districtCode)
+    })
+    return [...set]
+  })
+
+  const visitedProvinceCodes = computed(() => {
+    const set = new Set()
+    markers.value.forEach((m) => {
+      if (m.provinceCode) set.add(m.provinceCode)
+    })
+    return [...set]
+  })
+
   const stats = computed(() => {
     const list = markers.value
     const photos = list.reduce((n, m) => n + (m.photos?.length || 0), 0)
@@ -146,6 +163,8 @@ export const useMarkersStore = defineStore('markers', () => {
     isShareView,
     filteredMarkers,
     visitedCityCodes,
+    visitedDistrictCodes,
+    visitedProvinceCodes,
     stats,
     categoryOptions: CATEGORIES,
     getCategoryMeta,

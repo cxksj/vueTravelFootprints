@@ -82,6 +82,7 @@ func ParseRegeoPayload(body []byte) (*models.RegionInfo, error) {
 			AddressComponent struct {
 				Province interface{} `json:"province"`
 				City     interface{} `json:"city"`
+				District interface{} `json:"district"`
 				Adcode   string      `json:"adcode"`
 			} `json:"addressComponent"`
 		} `json:"regeocode"`
@@ -98,6 +99,10 @@ func ParseRegeoPayload(body []byte) (*models.RegionInfo, error) {
 	if cityName == "" {
 		cityName = provinceName // 直辖市/省直辖县市的 city 可能为空数组，用省名兜底
 	}
+	districtName, _ := payload.Regeocode.AddressComponent.District.(string)
+	if districtName == "" {
+		districtName = cityName // 直辖市的 district 也可能为空数组，用市名兜底
+	}
 	provinceCode, cityCode := DeriveRegionCodes(payload.Regeocode.AddressComponent.Adcode)
 	if provinceCode == "" {
 		return nil, fmt.Errorf("regeo 无 adcode")
@@ -107,5 +112,7 @@ func ParseRegeoPayload(body []byte) (*models.RegionInfo, error) {
 		CityCode:     cityCode,
 		ProvinceName: provinceName,
 		CityName:     cityName,
+		DistrictCode: payload.Regeocode.AddressComponent.Adcode,
+		DistrictName: districtName,
 	}, nil
 }

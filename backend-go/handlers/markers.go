@@ -121,6 +121,8 @@ func (h *MarkerHandler) Create(w http.ResponseWriter, r *http.Request) {
 		marker.CityCode = region.CityCode
 		marker.ProvinceName = region.ProvinceName
 		marker.CityName = region.CityName
+		marker.DistrictCode = region.DistrictCode
+		marker.DistrictName = region.DistrictName
 	}
 	if err := h.db.CreateMarker(marker); err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -160,7 +162,8 @@ func (h *MarkerHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	coordChanged := (req.Longitude != nil && *req.Longitude != existing.Longitude) ||
 		(req.Latitude != nil && *req.Latitude != existing.Latitude)
-	needRegion := coordChanged || existing.ProvinceCode == ""
+	// 区县码为空说明是区县级点亮上线前的旧数据，编辑保存时一并反查补齐
+	needRegion := coordChanged || existing.ProvinceCode == "" || existing.DistrictCode == ""
 	var region *models.RegionInfo
 	if needRegion {
 		nextLng, nextLat := existing.Longitude, existing.Latitude
@@ -188,6 +191,8 @@ func (h *MarkerHandler) Update(w http.ResponseWriter, r *http.Request) {
 		marker.CityCode = region.CityCode
 		marker.ProvinceName = region.ProvinceName
 		marker.CityName = region.CityName
+		marker.DistrictCode = region.DistrictCode
+		marker.DistrictName = region.DistrictName
 	}
 	writeOK(w, withAuthor(h.db, *marker))
 }

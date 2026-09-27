@@ -15,6 +15,8 @@ type Marker struct {
 	CityCode     string      `json:"cityCode"`
 	ProvinceName string      `json:"provinceName"`
 	CityName     string      `json:"cityName"`
+	DistrictCode string      `json:"districtCode"`
+	DistrictName string      `json:"districtName"`
 	TripID       string      `json:"tripId"`
 	IsPublic     bool        `json:"isPublic"`
 	CreatedAt    string      `json:"createdAt"`
@@ -28,6 +30,8 @@ type RegionInfo struct {
 	CityCode     string `json:"cityCode"`
 	ProvinceName string `json:"provinceName"`
 	CityName     string `json:"cityName"`
+	DistrictCode string `json:"districtCode"`
+	DistrictName string `json:"districtName"`
 }
 
 type CreateMarkerRequest struct {

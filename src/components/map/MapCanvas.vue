@@ -111,7 +111,7 @@ async function initMap() {
     })
     map.addControl(new AMap.Scale())
     map.on('click', onMapClick)
-    if (window.AMap.DistrictLayer?.Country) {
+    if (window.AMap.DistrictLayer?.Province) {
       regionLayer = createRegionLayer()
       syncRegionLayer()
     }
@@ -260,32 +260,35 @@ onBeforeUnmount(() => {
   map = null
 })
 
-// 创建城市填色图层（高德 DistrictLayer.Country + SOC 'CHN' + depth 2 为市级层级）；
-// fill 为函数式样式，入参是要素属性对象，从 props.adcode 匹配已到访城市
+// 创建区县填色图层：DistrictLayer.Province 在 depth 2 才下发区县级要素
+// （实测 Country 图层与 Province depth 3 均只给到市级，区县码永不命中）；
+// adcode 限定为到访省份，fill 函数式样式按 props.adcode 匹配已到访区县，
+// 未到访区县返回完全透明，只点亮去过的区县
 function createRegionLayer() {
-  const visited = new Set(markers.visitedCityCodes.map(String))
-  const layer = new window.AMap.DistrictLayer.Country({
-    zIndex: 9,
-    SOC: 'CHN',
+  if (!map) return null
+  const provinces = markers.visitedProvinceCodes.map(String)
+  if (!provinces.length) return null
+  const visited = new Set(markers.visitedDistrictCodes.map(String))
+  const layer = new window.AMap.DistrictLayer.Province({
+    zIndex: 99,
+    adcode: provinces,
     depth: 2,
     styles: {
-      fill: (props) => (visited.has(String(props?.adcode)) ? 'rgba(72, 119, 173, 0.35)' : 'rgba(0, 0, 0, 0)'),
-      'province-stroke': 'rgba(72, 119, 173, 0.4)',
-      'city-stroke': 'rgba(72, 119, 173, 0.5)'
+      fill: (props) => (visited.has(String(props?.adcode)) ? 'rgba(72, 119, 173, 0.55)' : 'rgba(0, 0, 0, 0)')
     }
   })
   layer.setMap(map)
   return layer
 }
 
-// 已到访集合变化时函数式样式无法增量更新，销毁重建图层；同时同步显隐开关
+// 已到访集合变化时函数式样式无法增量更新，销毁重建图层；同时同步显隐开关。
+// JSAPI 未就绪时（足迹先于地图加载完成）跳过，initMap 完成后会自建图层
 function syncRegionLayer() {
-  if (!regionLayer) return
-  regionLayer.setMap(null)
-  regionLayer.destroy?.()
+  if (!map || !window.AMap?.DistrictLayer?.Province) return
+  regionLayer?.setMap(null)
+  regionLayer?.destroy?.()
   regionLayer = createRegionLayer()
-  if (ui.regionLayerVisible) regionLayer.show()
-  else regionLayer.hide()
+  regionLayer?.[ui.regionLayerVisible ? 'show' : 'hide']?.()
 }
 
 defineExpose({ fitAll, renderMarkers })

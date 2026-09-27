@@ -24,7 +24,7 @@ func TestDeriveRegionCodes(t *testing.T) {
 }
 
 func TestParseRegeoPayload(t *testing.T) {
-	body := []byte(`{"status":"1","regeocode":{"formattedAddress":"浙江省杭州市西湖区","addressComponent":{"province":"浙江省","city":"杭州市","adcode":"330106"}}}`)
+	body := []byte(`{"status":"1","regeocode":{"formattedAddress":"浙江省杭州市西湖区","addressComponent":{"province":"浙江省","city":"杭州市","district":"西湖区","adcode":"330106"}}}`)
 	info, err := ParseRegeoPayload(body)
 	if err != nil {
 		t.Fatal(err)
@@ -35,17 +35,23 @@ func TestParseRegeoPayload(t *testing.T) {
 	if info.ProvinceName != "浙江省" || info.CityName != "杭州市" {
 		t.Fatalf("省市名不符: %+v", info)
 	}
+	if info.DistrictCode != "330106" || info.DistrictName != "西湖区" {
+		t.Fatalf("区县码/名不符: %+v", info)
+	}
 }
 
 func TestParseRegeoPayloadCityArray(t *testing.T) {
 	// 直辖市以外的省直辖情况 city 字段可能返回空数组
-	body := []byte(`{"status":"1","regeocode":{"addressComponent":{"province":"河南省","city":[],"adcode":"419001"}}}`)
+	body := []byte(`{"status":"1","regeocode":{"addressComponent":{"province":"河南省","city":[],"district":"济源市","adcode":"419001"}}}`)
 	info, err := ParseRegeoPayload(body)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if info.CityName != "河南省" {
 		t.Fatalf("city 为空数组时应用省名兜底: %+v", info)
+	}
+	if info.DistrictCode != "419001" || info.DistrictName != "济源市" {
+		t.Fatalf("省直辖县市的区县码应为其自身: %+v", info)
 	}
 }
 
